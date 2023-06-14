@@ -1,0 +1,404 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+    font-family: '__Poppins_b0a861';
+    background-color: #fff;
+    -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+    background-color: #f5f5f5;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #c2c2c2;
+    border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #a8a8a8;
+}
+
+.bg-img-subscribe {
+    background-image: url('https://www.lifepharmacy.com/images/home/subscribe-2.jpg');
+}
+
+.underline-tra {
+    position: relative;
+    display: inline-block;
+}
+
+.underline-tra::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: #007bff;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.2s ease-in-out;
+}
+
+.underline-tra:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+li>ul {
+    transform: translatex(100%) scale(0)
+}
+
+li:hover>ul {
+    transform: translatex(101%) scale(1)
+}
+
+li>button svg {
+    transform: rotate(-90deg);
+}
+
+/* li:hover>button svg {
+  transform: rotate(-270deg)
+} */
+
+.group:hover .group-hover\:scale-100 {
+    transform: scale(1)
+}
+
+.group:hover .group-hover\:-rotate-180 {
+    transform: rotate(180deg)
+}
+
+.scale-0 {
+    transform: scale(0)
+}
+
+.min-w-32 {
+    min-width: 8rem
+}
+
+/* .group:hover .list0>ul{transform:translatex(100%) scale(1) !important} */
+
+
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.width-set {
+    width: 100%;
+    transition: ease-in width 1s;
+}
+
+/* .group\/btn:hover .group-hover\/btn\ {
+    @apply 
+
+} */
+/* .group-btn:hover .single-btn {
+   
+} */
+
+.search-suggestion-height {
+    max-height: calc(98vh - 70px);
+}
+
+
+
+.lg-screen-searchsuggestion-sm {
+    height: calc(102vh - 70px);
+
+}
+
+textarea:focus,
+input:focus {
+    outline: none;
+}
+
+/* #defaultModalsm #sm-searchbox {
+  outline: none; 
+  box-shadow: 0 0 5px 0 rgb(6, 6, 14); 
+} */
+
+/* Styles for the modal backdrop when the modal is open */
+/* .modal-backdrop {
+  z-index: 1; 
+} */
+
+/* Styles for the modal container when the modal is open */
+/* .modal-open .modal {
+  z-index: 2; 
+} */
+
+.PhoneInputInput {
+    border-left: solid rgb(209 213 219) 1px;
+    border-top: none;
+    border-right: none;
+    border-bottom: none;
+    border-radius: 0 0.5rem 0.5rem 0;
+    font-weight: 700;
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    padding-top: 0.7rem;
+    padding-bottom: 0.7rem;
+}
+
+.h-1px {
+    height: 1px;
+}
+
+/* .font-sans {
+    font-family: 'Poppins', sans-serif;
+
+} */
+
+.z-100 {
+    z-index: 100 !important;
+}
+
+#emailInput {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.antialiased {
+    padding-right: 0;
+    padding-left: 0;
+}
+
+.PhoneInputCountryIcon {
+    margin-right: 0.5rem;
+}
+
+/* checkmark animation */
+
+.checkmark__circle {
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    stroke-width: 2;
+    stroke-miterlimit: 10;
+    stroke: #7ac142;
+    fill: none;
+    animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards
+}
+
+.checkmark {
+    width: 23px;
+    height: 23px;
+    border-radius: 50%;
+    display: block;
+    stroke-width: 2;
+    stroke: #fff;
+    stroke-miterlimit: 10;
+    margin: 10% auto;
+    box-shadow: inset 0px 0px 0px #7ac142;
+    animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both
+}
+
+.checkmark__check {
+    transform-origin: 50% 50%;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards
+}
+
+@keyframes stroke {
+    100% {
+        stroke-dashoffset: 0
+    }
+}
+
+@keyframes scale {
+
+    0%,
+    100% {
+        transform: none
+    }
+
+    50% {
+        transform: scale3d(1.1, 1.1, 1)
+    }
+}
+
+@keyframes fill {
+    100% {
+        box-shadow: inset 0px 0px 0px 30px #7ac142
+    }
+}
+
+/* checkmark animation */
+
+.bg-sub-img {
+    background-image: url('https://www.lifepharmacy.com/images/home/subscribe-bg.jpg');
+}
+
+#phoneInputOTPAddress {
+    padding: 0.4rem;
+    font-size: medium;
+}
+
+
+.swiper-pagination-bullet-active {
+    @apply !w-4 !h-2 !rounded-lg !bg-gray-400
+}
+
+/* .slides-per-view-2 {
+  @apply lg:slides-per-view-2;
+} */
+
+/* @media screen and (min-width: 768px) {
+  .swiper-slide {
+    width: calc(100% / 2);
+  }
+}
+
+@media screen and (min-width: 1024px) {
+  .swiper-slide {
+    width: calc(100% / 3);
+  }
+} */
+
+.sugg-pro {
+    @apply p-2 rounded-lg flex hover:bg-gray-100 w-full h-16
+}
+
+.swiper-button-prev {
+    @apply !text-gray-300
+}
+
+.swiper-button-next {
+    @apply !text-gray-300
+}
+
+.loading-style {
+    @apply mb-2 mr-2 w-24 rounded-xl bg-gray-300 py-[12px] px-3
+}
+
+.loading-img {
+    @apply flex h-11 w-11 items-center justify-center rounded bg-gray-300
+}
+
+@use postcss-preset-env;
+@use postcss-nested-ancestors;
+@use postcss-nested;
+
+.skeleton-box {
+
+    overflow: hidden;
+    background-color: #F4F4F4;
+
+
+}
+
+.skeleton-box::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0,
+      rgba(255, 255, 255, 0.2) 20%,
+      rgba(255, 255, 255, 0.5) 60%,
+      rgba(255, 255, 255, 0)
+    );
+    animation: shimmer 3s infinite;
+    content: '';
+}
+
+@keyframes shimmer {
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.leading-5 {
+    @apply space-y-2
+}
+
+.border-muted{
+    @apply  border-[#eee]
+}
+
+p{
+    @apply text-[#777] leading-[1.6rem]
+}
+
+.text-dark{
+    @apply text-[#333] 
+}
+.text-life{
+    @apply text-[#002579]
+}
+
+.bg-primary{
+    @apply bg-[#39f]
+}
+
+.text-primary{
+    @apply text-[#39f]
+}
+
+.btn-primary{
+    @apply border-[#39f] border rounded-lg hover:bg-[#39f] bg-white transition-colors duration-200 ease-in text-[#39f] hover:text-white 
+}
+
+strong{
+    @apply my-5 font-bold leading-10
+}
+li{
+    @apply leading-6
+}
+.text-life-2{
+    @apply text-[#a92579]
+}
+
+.bg-gray{
+    @apply bg-[#f4f5f8]
+}
+
+.bg-life{
+    @apply bg-[#002579]
+}
+.bg-life-2{
+    @apply bg-[#a92579]
+}
+
+.offers-btn{
+    @apply bg-[#ffde53] border border-[#ff9d00] rounded-sm w-fit text-[10px] px-2 py-[2px] text-life font-semibold
+}
+
+
+
+.label-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    min-width: 0;
+    border-radius: 50%;
+    line-height: 1;
+    font-weight: 400;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
