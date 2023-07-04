@@ -2,6 +2,7 @@ import * as Accordion from '@radix-ui/react-accordion';
 import React, { forwardRef, Ref } from "react"
 import classNames from 'classnames';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
+import Link from 'next/link'
 
 export const AccordionItem = forwardRef<HTMLDivElement, { children: any, className: any, value: any }>(({ children, className, value, ...props }, forwardedRef) => (
     <Accordion.Item
@@ -29,7 +30,7 @@ export const AccordionTrigger = forwardRef<HTMLButtonElement, { children: any, c
         >
             {children}
             <ChevronDownIcon
-                className="text-violet10 ease-[cubic-bezier(0.87,_0,_0.13,_1)] transition-transform duration-300 group-data-[state=open]:rotate-180"
+                className="text-violet10 ease-[cubic-bezier(0.87,_0,_0.13,_1)] transition-transform duration-300 group-data-[state=open]:rotate-180 w-5 h-5"
                 aria-hidden
             />
         </Accordion.Trigger>

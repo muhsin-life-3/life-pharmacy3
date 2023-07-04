@@ -27,9 +27,6 @@ const TransitionComp = ({  setTransition, children }: { setTransition: any, chil
             </Transition.Child>
 
         </Transition>
-
-
-
     )
 }
 

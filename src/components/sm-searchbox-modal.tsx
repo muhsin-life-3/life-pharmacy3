@@ -3,6 +3,7 @@ import { Dialog } from "@headlessui/react"
 import { FC } from "react"
 import { useLanguage } from "@/hooks/useLanguage"
 import Image from "next/image"
+
 interface SmSearchBoxModalProps {
     showModal: any,
     setCloseModal: any,
@@ -14,7 +15,7 @@ interface SmSearchBoxModalProps {
     searchClosebtn: boolean,
     searchData: any,
     searchBoxClear: any,
-    searchSuggestions:any,
+    searchSuggestions: any,
 }
 
 export const SmSearchBoxModal: FC<SmSearchBoxModalProps> = ({ searchClosebtn, showModal, setCloseModal, isArabic, queryData, setQueryData, searchButtonOnMouseEnter, SearchLoadingState, searchData, searchBoxClear, searchSuggestions }) => {
@@ -33,17 +34,14 @@ export const SmSearchBoxModal: FC<SmSearchBoxModalProps> = ({ searchClosebtn, sh
                                 </svg>
                                 <span className="sr-only">Close modal</span>
                             </button>
-                            <div className="flex-1 overflow-hidden rounded-sm  px-1"
-                            >
+                            <div className="flex-1 overflow-hidden rounded-sm  px-1">
                                 <div className="relative">
-
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={` fill-slate-400 pointer-events-none absolute ${isArabic ? 'right-4 ' : 'left-4'} top-1 w-4 h-6`}>
                                         <path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 100 13.5 6.75 6.75 0 000-13.5zM2.25 10.5a8.25 8.25 0 1114.59 5.28l4.69 4.69a.75.75 0 11-1.06 1.06l-4.69-4.69A8.25 8.25 0 012.25 10.5z" clip-rule="evenodd" />
                                     </svg>
-
-                                    <input type="text" id="sm-searchbox" value={queryData} onChange={(e) => { setQueryData(e.target.value) }} ref={input => input && input.focus()}
+                                    <input type="text" id="sm-searchbox" defaultValue={queryData} ref={input => input && input.focus()}
                                         className={`placeholder:text-sm border-none bg-gray-100 rounded-full  block w-full  focus:ring-0  py-[5px]    text-slate-900 placeholder:text-slate-500 sm:text-sm sm:leading-6   ${isArabic ? 'pr-12 text-right pl-16' : 'pl-10 text-left pr-16'}`}
-                                        placeholder={t.navbar.searchbox_text} onKeyDown={(e) => { searchButtonOnMouseEnter((e.target as HTMLInputElement).value, e.key, true) }} />
+                                        placeholder={t.navbar.searchbox_text} onChange={(e) => { searchButtonOnMouseEnter(e.target.value, "", true) }} />
 
                                     {SearchLoadingState ?
                                         <svg fill="none" className={`animate-spin absolute inline ${isArabic ? "left-8" : "right-8"}  inset-y-0 m-auto w-4 h-4 mx-2`} stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" shape-rendering="geometricPrecision" viewBox="0 0 24 24" height="24" width="24" ><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg> : ""}
@@ -61,7 +59,6 @@ export const SmSearchBoxModal: FC<SmSearchBoxModalProps> = ({ searchClosebtn, sh
                             </div>
                         </div>
 
-
                         <div className="pt-6 px-4 lg-screen-searchsuggestion-sm scale-100 absolute top-15 right-0 left-0 bg-white overflow-auto rounded-t-0 rounded-b-md">
                             {searchData.results[1] ?
                                 <>
@@ -70,7 +67,7 @@ export const SmSearchBoxModal: FC<SmSearchBoxModalProps> = ({ searchClosebtn, sh
                                             <>
                                                 <h5 className="text-sky-500 text-xs ">SUGGESTIONS</h5>
                                                 <div className="flex my-2 flex-wrap text-[13px] text-gray-700 group-search">
-                                                    {searchData.results[1].hits.slice(0, 10).map((sug_data:any) => (
+                                                    {searchData.results[1].hits.slice(0, 10).map((sug_data: any) => (
                                                         <div onClick={() => {
                                                             searchSuggestions(sug_data.query, true, "search")
 
@@ -82,12 +79,12 @@ export const SmSearchBoxModal: FC<SmSearchBoxModalProps> = ({ searchClosebtn, sh
                                     </div>
                                     <div className="text-gray-600 text-xs group-search">
                                         <h5 className="text-sky-500 text-xs">PRODUCTS</h5>
-                                        {searchData.results[0].hits[0] ? searchData.results[0].hits.map((pro_data:any) => (
+                                        {searchData.results[0].hits[0] ? searchData.results[0].hits.map((pro_data: any) => (
                                             <div onClick={() => {
                                                 searchSuggestions(pro_data.slug, true, "products")
 
                                             }} className="sugg-pro group-search">
-                                                <Image src={pro_data.images.featured_image} height={40} width={40} alt={pro_data.title}></Image>
+                                                <Image src={pro_data.images ? pro_data.images.featured_image:"/images/default-product-image.png"} height={40} width={40} alt={pro_data.title}></Image>
                                                 <p className="mx-3 my-auto">{pro_data.title} </p>
                                             </div>
                                         )) : <div className="py-12 text-center"><i>No Products Found</i></div>}

@@ -28,8 +28,7 @@ const SmMenu = ({ setSmScreenSearchBox, searchButtonOnClick }: { setSmScreenSear
                     </label>
                 </div>
                 <div>
-                    <input type="radio" id="searchSmMenu" className="hidden peer" name="smMenu" />
-                    <label htmlFor="searchSmMenu" className="active:text-blue-500 text-gray-500 " onClick={() => {
+                    <label className="active:text-blue-500 text-gray-500 " onClick={() => {
                         setSmScreenSearchBox(true)
                         searchButtonOnClick(false)
                     }}>

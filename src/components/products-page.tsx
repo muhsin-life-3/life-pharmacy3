@@ -8,7 +8,7 @@ import getCategoryData from '@/lib/getCategoryData';
 import BreadCrumb from './breadcrumb';
 import { useRouter } from 'next/router';
 
-export const ProductsPage = ({ filterPath, isSearchPage, categoryData, menuData, selectedBrands }: { categoryData: any, menuData: any, filterPath: string, isSearchPage: boolean, selectedBrands: string }) => {
+export const ProductsPage = ({ filterPath, isSearchPage, categoryData, menuData, selectedBrands, type }: { categoryData: any, menuData: any, filterPath: string, isSearchPage: boolean, selectedBrands: string, type: string }) => {
 
     const [readMoreClick, setReadMoreClick] = useState(false)
     const router = useRouter()
@@ -20,7 +20,7 @@ export const ProductsPage = ({ filterPath, isSearchPage, categoryData, menuData,
                 categoryData.filters && categoryData.filters.categories && categoryData.filters.categories[0] && categoryData.filters.categories[0].images && categoryData.filters.categories[0].images.banner ?
                     <div className=''>
                         <Image src={categoryData.filters.categories[0].images.banner} height={500} width={1440} alt="headerimg" className='object-cover lg:h-[20rem] md:h-[15rem] w-full mx-auto ' />
-                        <BreadCrumb menuData={menuData} />
+                        <BreadCrumb menuData={menuData} type={type} />
                         {categoryData.model_details.short_description &&
                             <div className="relative">
                                 <p className={`text-sm text-gray-600 my-5  ${readMoreClick ? '' : 'overflow-y-hidden h-[7rem]'} text-ellipsis leading-7`} dangerouslySetInnerHTML={{ __html: categoryData.model_details.short_description }} />
@@ -37,7 +37,7 @@ export const ProductsPage = ({ filterPath, isSearchPage, categoryData, menuData,
                                 <h1 className='text-2xl  text-center   capitalize text-blue-500'>{menuData[1] ? menuData[1] : " Products"} </h1>
                             </div>
                         </div>
-                        <BreadCrumb menuData={menuData} />
+                        <BreadCrumb menuData={menuData} type={type} />
                     </>
             }
             <ProductsPageData filterPath={filterPath} categoryData={categoryData} brandsData={categoryData.brands} isSearchPage={isSearchPage} selectedBrands={menuData[0] != "Category" ? selectedBrands : router.query.brands ? router.query.brands : ""} menuData={menuData} />

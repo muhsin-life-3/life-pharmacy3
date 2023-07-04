@@ -1,21 +1,17 @@
 import Image from "next/image";
 import { useEffect } from "react";
 import { useState, Fragment } from "react";
-import PhoneInput from "react-phone-number-input";
 import 'react-phone-number-input/style.css';
 import { useSession } from "next-auth/react";
 
 import { isValidPhoneNumber } from "react-phone-number-input";
 import { useRouter } from "next/router";
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay } from 'swiper'
-import 'swiper/css';
-import 'swiper/css/pagination';
+
 
 import Link from "next/link";
 import TransitionComp from "./transition";
 
-import AccountDetails from "./accountDetails";
+// import AccountDetails from "./accountDetails";
 import LanguageChangeModal from "./language-change-modal";
 import { useSelector } from 'react-redux';
 import { RootState } from "../redux/store";
@@ -23,26 +19,27 @@ import { removeFromCart } from "../redux/cart.slice";
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import React, { FC } from 'react'
-import Example from "./categories-accordion";
+// import Example from "./categories-accordion";
 import LocationModal from "./location-modal";
 import AuthModal from "./authorixzation-modal";
 import InvalidOTPModal from "./invalid-otp-modal";
 import AddressModal from "./address-modal";
 import { SmSearchBoxModal } from "./sm-searchbox-modal";
 import SmMenu from "./sm-menu";
-import { useLabels } from "@headlessui/react/dist/components/label/label";
 import { useLanguage } from "@/hooks/useLanguage";
-
+import { ChevronRightIcon, DropdownMenuIcon, HamburgerMenuIcon } from "@radix-ui/react-icons";
+import getProductsDataByCat from "@/lib/getProductsDataByCat";
+import ContentLoader from "react-content-loader";
+import { useWindowDimensions } from "@/hooks/useWindowDimensions";
 interface navbarProps {
   data: any,
   brands_data: any,
   isArabic: boolean,
   langData: any,
-  languageClickedToast: any
   lang: string
 }
 
-const Navbar: FC<navbarProps> = ({ data, brands_data, isArabic, langData, languageClickedToast, lang }) => {
+const Navbar: FC<navbarProps> = ({ data, brands_data, isArabic, langData, lang }) => {
 
   const countries = [
     { country: 'United Arab Emirates', flag: 'https://www.lifepharmacy.com/images/svg/flag-ae.svg', path: "ae" },
@@ -55,7 +52,6 @@ const Navbar: FC<navbarProps> = ({ data, brands_data, isArabic, langData, langua
   ]
 
   const { data: session } = useSession()
-  //@ts-ignore
 
   const cartItems = useSelector((state: RootState) => state.cart);
   const dispatch = useDispatch();
@@ -88,7 +84,7 @@ const Navbar: FC<navbarProps> = ({ data, brands_data, isArabic, langData, langua
   const [addNewAddress, setaddNewAddress] = useState(false);
   const [addNewAddressClick, setAddNewAddressClick] = useState(false);
   const [domLoaded, setDomLoaded] = useState(false);
-  const [showNavbarAcc, setShowNavbarAcc] = useState(false);
+  // const [showNavbarAcc, setShowNavbarAcc] = useState(false);
   const [addnewAddressFormVisibility, setaddnewAddressFormVisibility] = useState(false);
   const [availableAddresses, setavailableAddresses] = useState(true);
   const [languageModal, setLanguageModal] = useState(false)
@@ -97,13 +93,21 @@ const Navbar: FC<navbarProps> = ({ data, brands_data, isArabic, langData, langua
   const [SearchLoadingState, setSearchLoadingState] = useState(false)
   const [showDropdown, setShowDropdown] = useState(false);
   const [AddressDataIndex, setAddressDataIndex] = useState(session?.token?.addresses[0]);
-  const handleChange = (state: string) => setState(state);
-  const [chooseCountr, setChooseCountr] = useState(true)
-  const [chooseLanguage, setChooseLanguage] = useState(false)
+  // const [chooseCountr, setChooseCountr] = useState(true)
+  // const [chooseLanguage, setChooseLanguage] = useState(false)
+  const [searchTimer, setSearchTimer] = useState<any>(null)
+  const [hoverIndex, setHoverIndex] = useState<any>(0)
+  const [subCatIndex, setSubCatIndex] = useState<any>(0)
+  const [topBrandsData, setTopBrandsData] = useState<any>([])
+  const [topBrandsLoadingState, setTopBrandsLoadingState] = useState<any>(false)
+  const [singleCatBrandData, setSingleCatBrandData] = useState<any>(null)
+  const [topBrandsTimer, setTopBrandsTimer] = useState<any>(null)
 
 
   useEffect(() => {
     setDomLoaded(true);
+    fetchTopBrandsData(`categories=${"facial-skin-care"}`, 'facial-skin-care')
+
 
     if (!showDropdown) return;
     function handleClick(event: any) {
@@ -111,12 +115,6 @@ const Navbar: FC<navbarProps> = ({ data, brands_data, isArabic, langData, langua
     window.addEventListener("click", handleClick);
     return () => window.removeEventListener("click", handleClick);
   }, []);
-
-
-  function languageBackClicked() {
-    setChooseCountr(true);
-    setChooseLanguage(false);
-  }
 
 
   function searchSuggestions(searchData: string, isMobile: boolean, type: string) {
@@ -147,118 +145,145 @@ const Navbar: FC<navbarProps> = ({ data, brands_data, isArabic, langData, langua
     }
   }
 
+  const fetchTopBrandsData = (filterPath: any, path: any) => {
+    const topBrandsDataExists = topBrandsData.some((brandsData: any) => brandsData.type === path)
 
-  function setFocus() {
-    (document.getElementById("sm-searchbox") as HTMLInputElement).focus();
-  }
+    if (!topBrandsDataExists) {
+      setTopBrandsLoadingState(true)
 
-  var i = 1;
+      clearTimeout(topBrandsTimer)
 
-  function shopByCatOnMouseOver() {
-    setShowNavbarAcc(true);
-    (document.getElementById("BeautyCareele") as HTMLInputElement).classList.remove("hidden");
-    (document.getElementById("BeautyCarebtn") as HTMLInputElement).classList.add("text-blue-400", isArabic ? "border-r-4" : "border-l-4", "border-blue-500", "bg-blue-50");
-    i = 1;
-  }
+      const fetchDataTimer = setTimeout(() => {
+        getProductsDataByCat(filterPath, 0, false, locale).then(data => {
+          setTopBrandsData([...topBrandsData, { brands: [...data.data.brands], type: path }])
+          console.log(topBrandsData);
 
-  function ulListTrigger(e: React.MouseEvent<HTMLLIElement, MouseEvent>, itemName: string) {
-    var elements = document.getElementsByClassName("list-elements")
-    for (var ele of elements) {
-      if (!ele.classList.contains("hidden")) {
-        ele.classList.add("hidden");
-      }
-    }
-    if (i === 1 && itemName == "BeautyCareele") {
-      (document.getElementById("BeautyCarebtn") as HTMLInputElement).classList.remove("text-blue-400", isArabic ? "border-r-4" : "border-l-4", "border-blue-500", "bg-blue-50");
-    }
-    if (i === 1 && itemName != "BeautyCareele") {
-      (document.getElementById("BeautyCareele") as HTMLInputElement).classList.add("hidden");
-      (document.getElementById("BeautyCarebtn") as HTMLInputElement).classList.remove("text-blue-400", isArabic ? "border-r-4" : "border-l-4", "border-blue-500", "bg-blue-50");
-      (document.getElementById(itemName) as HTMLInputElement).classList.remove("hidden");
+          setTopBrandsLoadingState(false)
+
+          setSingleCatBrandData(data.data.brands)
+        }
+        )
+      }, 500)
+
+      setTopBrandsTimer(fetchDataTimer)
+
     }
     else {
-      (document.getElementById(itemName) as HTMLInputElement).classList.remove("hidden");
+
+      const singleCat = topBrandsData.filter((brandsData: any) => brandsData.type === path)
+
+      setSingleCatBrandData(singleCat[0].brands)
     }
-    i++
   }
+
+  // function setFocus() {
+  //   (document.getElementById("sm-searchbox") as HTMLInputElement).focus();
+  // }
+
+  // var i = 1;
+
+  // function ulListTrigger(e: React.MouseEvent<HTMLLIElement, MouseEvent>, itemName: string) {
+  //   var elements = document.getElementsByClassName("list-elements")
+  //   for (var ele of elements) {
+  //     if (!ele.classList.contains("hidden")) {
+  //       ele.classList.add("hidden");
+  //     }
+  //   }
+  //   if (i === 1 && itemName == "BeautyCareele") {
+  //     (document.getElementById("BeautyCarebtn") as HTMLInputElement).classList.remove("text-blue-400", isArabic ? "border-r-4" : "border-l-4", "border-blue-500", "bg-blue-50");
+  //   }
+  //   if (i === 1 && itemName != "BeautyCareele") {
+  //     (document.getElementById("BeautyCareele") as HTMLInputElement).classList.add("hidden");
+  //     (document.getElementById("BeautyCarebtn") as HTMLInputElement).classList.remove("text-blue-400", isArabic ? "border-r-4" : "border-l-4", "border-blue-500", "bg-blue-50");
+  //     (document.getElementById(itemName) as HTMLInputElement).classList.remove("hidden");
+  //   }
+  //   else {
+  //     (document.getElementById(itemName) as HTMLInputElement).classList.remove("hidden");
+  //   }
+  //   i++
+  // }
   const [queryData, setQueryData] = useState("")
 
   function searchButtonOnClick(isOpen: boolean) {
-    debugger
     if (window.innerWidth > 767) {
       const lgScreenSearchBox = document.getElementById("lg-screen-search") as HTMLInputElement
 
       if (isOpen) {
         document.getElementsByClassName("lg-screen-searchsuggestion-lg")[0].classList.remove("hidden");
         lgScreenSearchBox.classList.remove("rounded-full");
-        lgScreenSearchBox.classList.add("rounded-b-none", "rounded-xl");
-
+        lgScreenSearchBox.classList.add("rounded-b-none", "rounded-3xl");
       }
-      else {
-        document.getElementsByClassName("lg-screen-searchsuggestion-lg")[0].classList.add("hidden");
-        lgScreenSearchBox.classList.remove("rounded-b-none", "rounded-xl");
-        lgScreenSearchBox.classList.add("rounded-full");
-
-      }
+   
     }
 
-    searchButtonOnMouseEnter(queryData, '', false)
+    searchButtonOnMouseEnter(queryData)
   }
+
   function searchBoxClear() {
+    (document.getElementById("sm-searchbox") as HTMLInputElement).value = ""
     setQueryData("")
-    searchButtonOnMouseEnter("", '', true)
+    searchButtonOnMouseEnter("",)
     setVisibility(false);
   }
-  function searchButtonOnMouseEnter(query: string, key: string, isMobile: boolean) {
-    if (key === 'Enter') {
-      searchSuggestions(query, isMobile, "search")
+  function searchButtonOnMouseEnter(query: string) {
+    setQueryData(query)
+
+    clearTimeout(searchTimer)
+
+    const newTimer = setTimeout(() => {
+      getSearchData(query)
+    }, 600)
+
+    setSearchTimer(newTimer)
+
+    if (query != "") {
+      setVisibility(true);
     }
     else {
-      var myHeaders = new Headers();
-      myHeaders.append("X-Algolia-API-Key", "c54c5f0fc2e6bd0c3b97cfa5b3580705");
-      myHeaders.append("X-Algolia-Application-Id", "WHCXS2GWOG");
-      myHeaders.append("Content-Type", "application/json");
-
-      var raw = JSON.stringify({
-        "requests": [
-          {
-            "indexName": "products",
-            "params": "query=" + query
-          },
-          {
-            "indexName": "products_query_suggestions",
-            "params": "query=" + query
-          }
-        ],
-        "strategy": "none"
-      });
-
-      var requestOptions: RequestInit = {
-        method: 'POST',
-        headers: myHeaders,
-        body: raw,
-        redirect: 'follow'
-      };
-      setSearchLoadingState(true)
-
-      fetch("https://WHCXS2GWOG-dsn.algolia.net/1/indexes/*/queries?lang=ae-en", requestOptions)
-        .then(response => response.json())
-        .then(result => {
-          setData(result);
-          setSearchLoadingState(false);
-        })
-        .catch(error => console.log('error while fetching search data', error));
-
-      if (query != "") {
-        setVisibility(true);
-      }
-      else {
-        setVisibility(false);
-      }
-      setQueryData(query)
+      setVisibility(false);
     }
   }
 
+  const getSearchData = (query: string) => {
+
+    console.log("Search Data" + query);
+
+
+    var myHeaders = new Headers();
+    myHeaders.append("X-Algolia-API-Key", "c54c5f0fc2e6bd0c3b97cfa5b3580705");
+    myHeaders.append("X-Algolia-Application-Id", "WHCXS2GWOG");
+    myHeaders.append("Content-Type", "application/json");
+
+    var raw = JSON.stringify({
+      "requests": [
+        {
+          "indexName": "products",
+          "params": "query=" + query
+        },
+        {
+          "indexName": "products_query_suggestions",
+          "params": "query=" + query
+        }
+      ],
+      "strategy": "none"
+    });
+
+    var requestOptions: RequestInit = {
+      method: 'POST',
+      headers: myHeaders,
+      body: raw,
+      redirect: 'follow'
+    };
+    setSearchLoadingState(true)
+
+    fetch("https://WHCXS2GWOG-dsn.algolia.net/1/indexes/*/queries?lang=ae-en", requestOptions)
+      .then(response => response.json())
+      .then(result => {
+        setData(result);
+        setSearchLoadingState(false);
+      })
+      .catch(error => console.log('error while fetching search data', error));
+  }
 
   function saveAddresstoDb() {
     debugger
@@ -285,6 +310,14 @@ const Navbar: FC<navbarProps> = ({ data, brands_data, isArabic, langData, langua
 
 
   }
+
+  function slugify(text: string) {
+    return text.toLowerCase().replace(/[\s&/]+/g, '-')
+  }
+  function generatePath(grand_p: string, parent: string, child: string) {
+    return `/category/${slugify(grand_p)}/${parent}/${slugify(child)}`
+  }
+
   var addressId = session ? (session.token.addresses.length != 0 ? (session.token.addresses[session.token.addresses.length - 1]?.id) + 1 : 12345 + 1) : ""
   const [formData, setFormData] = useState({
     id: addressId,
@@ -414,6 +447,7 @@ const Navbar: FC<navbarProps> = ({ data, brands_data, isArabic, langData, langua
     }
   }
 
+  const { width } = useWindowDimensions()
   return (
 
     <>
@@ -428,7 +462,6 @@ const Navbar: FC<navbarProps> = ({ data, brands_data, isArabic, langData, langua
               </svg>
               <div className="my-auto sm:text-sm  text-[8px] mx-2">{langData.navbar.highest_rated_phar}</div>
             </div>
-
             <div className="text-end sm:text-sm  text-[8px]  my-auto font-bold">{langData.navbar.download_now}</div>
           </div>
         </TransitionComp>
@@ -441,16 +474,14 @@ const Navbar: FC<navbarProps> = ({ data, brands_data, isArabic, langData, langua
             <Link href={"/"} className="my-auto">
               <Image src="https://www.lifepharmacy.com/images/logo-white.svg" alt=""
                 className=" bg-[#002579] filter md:flex hidden" width={380} height={250} />
-
               <Image className="mr-auto w-7 lg:hidden md:hidden" src="https://www.lifepharmacy.com/images/life.svg" alt="" width={100} height={100} />
-
             </Link>
 
             <div className="flex items-center w-full " >
               <label htmlFor="simple-search-lg" className="sr-only">Search</label>
               <div className="relative w-full">
 
-                <div className="relative group-search bg-gray-100  rounded-full " id="lg-screen-search" onKeyDown={(e) => { searchButtonOnMouseEnter((e.target as HTMLInputElement).value, e.key, false) }} onMouseDown={(e) => { searchButtonOnClick(true) }}   >
+                <div className="relative group-search bg-white rounded-full" id="lg-screen-search" onChange={(e) => { searchButtonOnMouseEnter((e.target as HTMLInputElement).value) }} onKeyDown={(e) => e.key === "Enter" ? searchButtonOnClick(false) : null} onMouseDown={(e) => { searchButtonOnClick(true) }}   >
                   <div className={`absolute inset-y-0  flex items-center pointer-events-none ${isArabic ? 'right-0 pr-3 ' : 'left-0 pl-3'}`}>
                     <svg aria-hidden="true" className="w-5 h-5 text-gray-500 " fill="currentColor"
                       viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -462,14 +493,14 @@ const Navbar: FC<navbarProps> = ({ data, brands_data, isArabic, langData, langua
                   {SearchLoadingState ?
                     <svg fill="none" className={`animate-spin w-5 h-5 absolute inline ${isArabic ? "left-8" : "right-8"}  inset-y-0 m-auto w-4 h-4 mx-2`} stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" shape-rendering="geometricPrecision" viewBox="0 0 24 24" height="24" width="24" ><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg> : ""}
 
-                  < input type="search" id="lg-searchbox"
-                    className={`focus:ring-0 focus:ring-offset-0 hidden md:block bg-gray-100 border-gray-200 p-[0.6rem] border text-gray-900 text-sm rounded-full w-full ${isArabic ? 'pr-10 ' : 'pl-10 '} p-3`}
+                  < input type="search" defaultValue={queryData} id="lg-searchbox"
+                    className={`focus:ring-0 focus:ring-offset-0 hidden md:block bg-white  p-[0.7rem]  text-gray-900 text-sm rounded-full  w-full ${isArabic ? 'pr-10 ' : 'pl-10 '} p-3`}
                     placeholder={langData.navbar.searchbox_text} />
 
-                  <div className="shadow-xl py-1 pt-4 px-3 lg-screen-searchsuggestion-lg scale-100 hidden absolute top-13  right-0 left-0  bg-gray-100 border-gray-200 overflow-auto search-suggestion-height rounded-t-0 rounded-b-md z-30">
+                  <div className="shadow-xl px-3 lg-screen-searchsuggestion-lg scale-100 hidden absolute top-13  right-0 left-0  bg-white border-gray-200   rounded-t-0 rounded-b-md z-50 border-t-[3px] border-muted">
                     {searchData.results[1] ?
                       <>
-                        <div className="mb-5 group-search">
+                        <div className="mb-5 group-search sticky top-0 bg-white pt-4">
                           {searchData?.results[1]?.hits[0] ?
                             <>
                               <h5 className="text-sky-500 text-xs ">SUGGESTIONS</h5>
@@ -481,22 +512,21 @@ const Navbar: FC<navbarProps> = ({ data, brands_data, isArabic, langData, langua
                                   }} className="rounded-xl bg-gray-200 hover:bg-gray-300  py-1 px-3 mb-2 mr-2 cursor-pointer">{sug_data.query}</div>
                                 ))}
                               </div></>
-
                             : ""}
                         </div>
-                        <div className="text-gray-600 text-xs group-search">
+                        <div className="text-gray-600 text-xs group-search overflow-y-auto search-suggestion-height">
                           <h5 className="text-sky-500 text-xs ">PRODUCTS</h5>
                           {searchData.results[0].hits[0] ? searchData.results[0].hits.map(pro_data => (
                             <div onClick={() => {
                               searchSuggestions(pro_data.slug, false, "products")
                             }} className="p-2 rounded-lg flex  group-search hover:bg-gray-100 w-full h-16 cursor-pointer">
-                              <Image src={pro_data.images.featured_image} height={40} width={40} alt={pro_data.title}></Image>
+                              <Image src={pro_data.images ? pro_data.images.featured_image : "/images/default-product-image.png"} height={40} width={40} alt={pro_data.title} className="border-[3px] rounded border-muted"></Image>
                               <p className="mx-2  my-auto">{pro_data.title} </p>
                             </div>
                           )) : <div>No Products Found</div>}
                         </div>
                       </> : <div role="status" className="max-w-full animate-pulse">
-                        <div className="group-search mb-5">
+                        <div className="group-search mb-5 pt-4">
                           <h5 className="text-xs text-sky-500">SUGGESTIONS</h5>
                           <div className="group-search my-2 flex flex-wrap text-[13px] text-gray-700">
                             <span className="sr-only">Loading...</span>
@@ -650,7 +680,7 @@ const Navbar: FC<navbarProps> = ({ data, brands_data, isArabic, langData, langua
                 <div className="text-[11px] text-center text-white" >{langData.navbar.cart}</div>
 
                 {domLoaded && cartItems && cartItems.length > 0 ?
-                  <div className="group-hover/cart:scale-100  scale-0 absolute w-[25rem] top-[3rem] right-0 bg-white rounded-lg px-3 py-2  h-fit  shadow-lg">
+                  <div className="group-hover/cart:scale-100  scale-0 absolute w-[25rem] top-[3rem] right-0 bg-white rounded-lg px-3 py-2  h-fit  shadow-lg z-30">
                     <div className="overflow-y-auto h-fit max-h-[20rem] px-2">
                       {cartItems.map((item: any) => (
                         <>
@@ -693,199 +723,203 @@ const Navbar: FC<navbarProps> = ({ data, brands_data, isArabic, langData, langua
             </div>
           </div>
           <div className="bg-[#a92579] items-center">
-            <div className=" flex justify-between py-1 max-w-[1450px] mx-auto  sm:px-[10px] px-[5px] text-white lg:flex md:flex hidden  text-xs " >
-              <div className={"flex justify-start  space-x-3 "}>
-                <div className={`${isArabic ? 'ml-2' : 'mr-2'} my-auto`}>
-                  <span className="">{langData.navbar.highest_rated_phar}</span>
+            <div className="  justify-between py-1 max-w-[1450px] mx-auto  sm:px-[10px] px-[5px] text-white lg:flex md:flex hidden " >
+              <Link href={"/super-summer-savers"} className={"flex justify-start space-x-3 "}>
+                <div className={` my-auto`}>
+                  <small className="text-xs whitespace-nowrap">{langData.navbar.highest_rated_phar} <span className=" ml-2">|</span> </small>
                 </div>
-                <Image src={"https://www.lifepharmacy.com/images/app-rating.svg"} className="w-20 h-5" height={30} width={30} alt={"app-rating"} /></div>
-
+                <Image src={"https://www.lifepharmacy.com/images/app-rating.svg"} className="lg:w-20 w-10 h-5 my-auto" height={30} width={30} alt={"app-rating"} />
+                <div className="flex items-center">
+                  <span className="font-semibold mr-1">|</span>
+                  <small className="text-xs whitespace-nowrap">Download Now</small>
+                </div>
+              </Link>
               <div className="text-end flex justify-between items-center ">
-                <div className="mx-4">{langData.navbar.deliver_to}  {session?.token?.addresses && session?.token?.addresses.length != 0 ? (displayedAddress(AddressDataIndex)) : "Select a Location"}</div>
+                <small className="mx-4 text-xs whitespace-nowrap">{langData.navbar.deliver_to}  {session?.token?.addresses && session?.token?.addresses.length != 0 ? (displayedAddress(AddressDataIndex)) : "Dubai, United Arab Emirates"}</small>
                 <button
-                  className="bg-white text-black rounded px-3   font-bold py-1" onClick={() => { locationOnClickHandle() }}>CHANGE</button>
+                  className="bg-white text-life-2 text-xs rounded px-2   font-bold py-1 flex items-center text-life" onClick={() => { locationOnClickHandle() }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-4 h-3 mr-1" viewBox="0 0 16 16">
+                    <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A31.493 31.493 0 0 1 8 14.58a31.481 31.481 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94zM8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10z" />
+                    <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+                  </svg>
+                  <span>CHANGE</span>  </button>
               </div>
             </div>
           </div>
+          <div className="w-full bg-white shadow-md">
+            <div className="hidden md:grid grid-cols-12 bg-white max-w-[1440px] mx-auto relative ">
 
-          <div className="grid grid-cols-3 gap-4  hidden lg:flex md:flex bg-white shadow-md">
-            <div onMouseOver={() => setOverlay(true)} onMouseLeave={() => { setOverlay(false) }} className="group inline-block shop-by-cat ">
-              <button
-                onMouseOver={() => shopByCatOnMouseOver()} className="group-hover:bg-blue-500 py-[5px]  group-hover:text-white hover:text-white dropdown BeautyCareele  border-r border-slate-300 w-[236px] items-center flex"
-                id="dropdownDefaultButton" data-dropdown-toggle="dropdown">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5"
-                  stroke="currentColor" className="w-6 h-6 my-2 float-left ml-3">
-                  <path strokeLinecap="round" strokeLinejoin="round"
-                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                </svg>
-                <div className="text-start float-left mr-10 text-sm group-1 align-middle flex items-center ml-2">
-                  {langData.navbar.shop_by_cat} </div>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5"
-                  stroke="currentColor" className="h-6 float-right  w-4 mr-2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                </svg>
-              </button>
+              <div onMouseOver={() => {
+                setOverlay(true)
+              }} onMouseLeave={() => { setOverlay(false) }} className="group inline-block shop-by-cat lg:col-span-2 col-span-3 min-w-fit">
+                <button
+                  className="group-hover:bg-blue-500 py-[5px]  group-hover:text-white hover:text-white dropdown BeautyCareele flex justify-between px-2 border-r border-slate-300  items-center w-full bg-blue-50"
+                  id="dropdownDefaultButton" data-dropdown-toggle="dropdown">
 
-              <div className="flex justify-start absolute bg-white  scale-0 group-hover:scale-100 left-0 right-0">
-                <div className="z-30  bg-white">
-                  <ul className="text-sm text-gray-700  rounded-sm transform scale-0 group-hover:scale-100  
-              transition duration-100 ease-in-out origin-top bg-white w-[236px] h-full flex flex-wrap border-r-[0.1px] border-slate-300 shadow-md" id="catgories-element">
-                    {data.data.map((item: any, i: number) => (
-                      <li key={item.name} onMouseOver={(e) => { ulListTrigger(e, (item.name + "ele").replace(/\s/g, '')) }} className={" group/btn w-full list" + i}>
-                        <button id={(item.name + "btn").replace(/\s/g, '')} className={`single-btn w-full py-4 transition-all duration-100 ease-in-out group-hover/btn:bg-blue-50 group-hover/btn:border-blue-500 group-hover/btn:text-blue-400 ${isArabic ? 'pr-5 group-hover/btn:border-r-[4px]' : 'pl-5 group-hover/btn:border-l-[4px]'} text-left flex px-2`} >
-                          <span className="flex-1 mx-3 whitespace-nowrap">  {item.name}   </span>
-                          <span className="mr-auto my-auto">
-                            <svg className={`fill-current h-4 w-4  transition duration-150 ease-in-out ${isArabic ? 'rotate-90' : ''}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"> <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                            </svg>
-                          </span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-
-                <div className="bg-white shadow-lg transform scale-0 group-hover:scale-100  
-              z-10 transition duration-150 ease-in-out origin-top text-black  overflow-auto max-h-[28rem]  w-full hello py-4" >
-                  <div className="mx-auto md:w-full xl:w-full mb-5" >
-                    <div className="font-bold lg:text-2xl text-center mb-3" >TOP BRANDS</div>
-
-                    <Swiper
-                      centeredSlides={true}
-                      className="my-6 "
-                      slidesPerView={6}
-                      autoplay={{
-                        delay: 10,
-                        disableOnInteraction: false,
-                      }}
-                      speed={3000}
-                      modules={[Autoplay]}
-                      loop={true}
-                      breakpoints={{
-                        1024: {
-                          width: 1024,
-                          slidesPerView: 7,
-                        },
-                        768: {
-                          width: 768,
-                          slidesPerView: 6
-                        },
-                      }}
-                    >
-
-                      {brands_data.data.brands.map((bd: any) => (
-                        <SwiperSlide className="cursor-grab">
-                          <Link href={`/brand/${bd.slug}`}>
-                            <Image className="mx-auto md:w-16 md:h-16 lg:w-24 lg:h-24 xl:w-24 xl:h-24 rounded-full border border-gray-300 " width={150} height={150} src={bd.images.logo} alt="" />
-                          </Link>
-                        </SwiperSlide>
-                      ))}
-                    </Swiper>
-
+                  <div
+                    className=" flex w-6 h-6 my-2 float-left cursor-pointer items-center justify-center   p-0.5 ">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-6 h-6 group-hover:hidden block" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z" />
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-6 h-6 group-hover:block hidden " viewBox="0 0 16 16">
+                      <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z" />
+                    </svg>
                   </div>
-                  {data.data.map((item: any) => (
-                    <div className="w-full hidden list-elements" id={(item.name + "ele").replace(/\s/g, '')} onMouseOver={() => { (document.getElementById((item.name + "btn").replace(/\s/g, '')) as HTMLElement).classList.add("text-blue-500", isArabic ? "border-r-4" : "border-l-4", "border-blue-500", "bg-blue-50") }} onMouseLeave={() => { ((document.getElementById((item.name + "btn").replace(/\s/g, '')) as HTMLElement)).classList.remove("text-blue-500", isArabic ? "border-r-4" : "border-l-4", "border-blue-500", "bg-blue-50") }}>
-
-                      <ul className={"right-0 u-list bg-white rounded-sm top-0 hover-menu  h-[35rem] ul-list-hover w-full " + (item.name + "ele").replace(/\s/g, '')} >
-
-                        <li key={item.name + "elem"} className="">
-
-                          <div className=" mb-9 ">
-                            <div className="flex justify-between  w-full flex-wrap">
-                              <div className="  lg:order-none md:w-full">
-                                <Example acc_data={item} />
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex space-x-6 ">
-              <div className="group inline-block mr-2">
-                <button className="hover:text-blue-500 underline-tra ml-7 py-1" data-dropdown-toggle="dropdown2">
+                  <div className="text-start text-sm group-1 align-middle flex justify-between whitespace-nowrap">
+                    {langData.navbar.shop_by_cat}
+                  </div>
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5"
-                    stroke="currentColor" className="w-6 h-6 my-2 float-left mr-3">
-                    <path strokeLinecap="round" strokeLinejoin="round"
-                      d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                    stroke="currentColor" className="h-6 float-right  w-4 mr-2 group-hover:-rotate-180 transition-transform duration-200">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                   </svg>
-                  <Link href={"/brands"} className=" text-start mt-2 float-left font-bold uppercase ">{langData.navbar.brands}</Link>
                 </button>
-                <ul
-                  className="bg-white shadow-lg transform scale-0 group-hover:scale-100 absolute 
-                z-10 transition duration-150 ease-in-out origin-top hidden group-hover:flex flex-col  px-5  text-black left-0 right-0 h-fit ">
-                  <li key={"brands-section"} >
-                    <div className="grid grid-cols-5 gap-3  mx-auto" id="brands-section">
-                      {brands_data.data.brands.map((bd: any) => (
-                        <div className="grid-flow-row mb-5"> <div className={`flex flex-col mr-5`}>
-                          <Link href={`/brand/${bd.slug}`}>
-                            <Image className="mx-auto rounded-full border border-white bg-white shadow-md" width={120} height={120} src={bd.images.logo} alt="" />
-                            <h5 className="text-center mt-3">{bd.name}</h5>
-                          </Link>
-                        </div></div>
+
+                <div className="z-30 absolute border-t border group-hover:opacity-100 opacity-0 group-hover:scale-100 scale-0  transition-opacity duration-300 left-0 right-0 bg-white ">
+                  <div className="grid grid-cols-12">
+                    <div className=" lg:col-span-2 col-span-3">
+                      {data.data.map((item: any, i: number) => (
+                        <button onMouseOver={() => {
+                          setSubCatIndex(0)
+                          setHoverIndex(i)
+                          data.data.slice(hoverIndex, hoverIndex + 1).map((item: any, i: number) => (item.children.slice(subCatIndex, subCatIndex + 1).map((itm: any) => (
+                            fetchTopBrandsData(`categories=${itm.slug}`, itm.slug)
+                          ))))
+                        }} className={`py-1 border-white border-b  w-full flex justify-between px-2 text-sm items-center bg-slate-200/80  hover:bg-slate-100 duration-200 transition-colors  ${hoverIndex === i ? '!bg-slate-100 font-semibold' : ""}`}>
+                          <div className="space-x-2 flex items-center">
+                            <div className="h-[60px] w-[60px] border-4 border-slate-300/50 rounded-full">
+                              <Image src={`/images/${slugify(item.name)}.webp`} width={60} height={60} className="rounded-full w-full" alt={item.name} />
+                            </div>
+                            <div className={` text-[13px] whitespace-nowrap `} >{item.name}</div>
+                          </div>
+                          <ChevronRightIcon className="w-3 h-3" />
+                        </button>
                       ))}
                     </div>
-                    <div className="w-full text-center my-5">
-                      <Link href="/brands" className="text-white px-8 py-2 text-sm mx-auto rounded-full bg-[#39f]">VIEW ALL</Link>
+                    <div className="col-span-4 lg:col-span-3 h-fit  bg-white overflow-y-auto overflow-x-hidden max-h-[485px]">
+                      {data.data.slice(hoverIndex, hoverIndex + 1).map((item: any, i: number) => (
+                        item.children.map((itm: any, i: number) => (
+                          <button onMouseOver={() => {
+                            setSubCatIndex(i)
+                            fetchTopBrandsData(`categories=${itm.slug}`, itm.slug)
+                          }} className={`py-1 border-white border-b flex px-4 whitespace-nowrap justify-between w-full bg-slate-100 hover:bg-white duration-100 transition-colors text-sm items-center ${subCatIndex === i ? 'bg-white font-semibold' : ""}`}>
+                            <div className="space-x-2 flex items-center" >
+                              <div className="h-[60px] w-[60px] border-4 border-slate-200 rounded-full">
+                                <Image src={itm.sections[0] && itm.sections[0].images.logo ? itm.sections[0].images.logo : "/images/default-product-image.png"} height={60} width={60} alt={itm.name} className="w-full rounded-full" />
+                              </div>
+                              <h5 className="text-[13px]">{itm.name}</h5>
+                            </div>
+                            <ChevronRightIcon className="w-3 h-3" />
+                          </button>
+                        ))
+                      ))}
                     </div>
-                  </li>
-                </ul>
+                    <div className="space-y-5 lg:col-span-7 col-span-5  px-4 bg-white max-h-[485px] overflow-y-auto overflow-x-hidden">
+                      {/* <h3 className="font-semibold text-center ">CATEGORIES</h3> */}
+                      <div className="grid xl:grid-cols-4 grid-cols-2 gap-4 py-2 relative">
+                        {data.data.slice(hoverIndex, hoverIndex + 1).map((item: any, i: number) => (
+                          item.children.slice(subCatIndex, subCatIndex + 1).map((itm: any) => (
+                            itm.sections.map((sec: any) => (
+                              sec.images.logo ?
+                                <Link className=" group/catImage lg:flex block  items-center hover:bg-slate-100 p-3 rounded-xl hover:font-bold " href={generatePath(item.name, itm.slug, sec.name)}>
+                                  <Image src={sec.images.logo} alt={sec.name} width={60} height={60} className="group-hover/catImage:scale-110 duration-200 transition-transform lg:mx-0 mx-auto border-muted border-4 rounded-full max-h-[60px] max-w-[60px]" />
+                                  <p className=" text-xs lg:ml-3 ml-0 lg:text-left text-center lg:mt-0 mt-3 text-black" style={{ wordBreak: "break-all" }} >{sec.name}</p>
+                                </Link>
+                                : null
+                            ))
+                          ))))}
+                      </div>
+                      <div className="sticky bottom-0 bg-white py-2">
+                        <h3 className="text-lg font-bold text-center mt-2">TOP BRANDS</h3>
+                        <div className="grid xl:grid-cols-6 lg:grid-cols-5 gap-3 grid-cols-4 ">
+                          {singleCatBrandData && !topBrandsLoadingState ?
+                            singleCatBrandData.slice(0, width > 1280 ? 6 : width > 991 ? 5 : 4).map((brandData: any) => (
+                              <Link className="group/brand relative" href={`/brand/${brandData.slug}`}>
+                                <Image src={brandData.images.logo ? brandData.images.logo : "/images/default-product-image.png"} height={80} width={80} className="mx-auto group-hover/brand:shadow-xl group-hover/brand:shadow-blue-200 duration-100 transition-shadow shadow rounded-lg" alt="brand-img" />
+                                <div className="absolute  left-0 right-0 bottom-0 bg-emerald-200  w-fit mx-auto rounded-tl-lg rounded-tr-lg px-1">
+                                  <h5 className="text-center text-black text-[11px] whitespace-nowrap">{brandData.name}</h5>
+                                </div>
+                              </Link>
+                            ))
+                            :
+                            <div className="col-span-full mx-auto">
+                              <ContentLoader
+                                width={500}
+                                height={100}
+                                viewBox="0 0 500 100"
+                                backgroundColor="#f3f3f3"
+                                foregroundColor="#ecebeb"
+                              >
+                                <circle cx="46" cy="38" r="38" />
+                                <rect x="34" y="83" rx="5" ry="5" width="25" height="10" />
+                                <rect x="547" y="222" rx="5" ry="5" width="220" height="10" />
+                                <rect x="82" y="150" rx="5" ry="5" width="220" height="10" />
+                                <circle cx="137" cy="38" r="38" />
+                                <rect x="124" y="83" rx="5" ry="5" width="25" height="10" />
+                                <circle cx="228" cy="38" r="38" />
+                                <rect x="215" y="83" rx="5" ry="5" width="25" height="10" />
+                                <circle cx="320" cy="38" r="38" />
+                                <rect x="307" y="83" rx="5" ry="5" width="25" height="10" />
+                                <circle cx="410" cy="38" r="38" />
+                                <rect x="398" y="83" rx="5" ry="5" width="25" height="10" />
+                              </ContentLoader>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="group inline-block mr-2">
-                <button className="hover:text-blue-500 underline-tra py-1 group"
-                  data-dropdown-toggle="dropdown8">
 
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5"
-                    stroke="currentColor" className="w-6 h-6 my-2 float-left mr-3">
-                    <path strokeLinecap="round" strokeLinejoin="round"
-                      d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
-                  </svg>
-
-                  <Link href={"/offers"} className=" text-start mt-2 float-left font-bold uppercase">{langData.navbar.offers}</Link>
-                </button>
-                <ul className="py-2 text-sm text-gray-700  border rounded-sm transform scale-0 group-hover:scale-100 absolute transition duration-150 ease-in-out origin-top min-w-32 bg-white z-10">
-                  <ul className="py-2 text-sm text-gray-700  " aria-labelledby="dropdownDefaultButton">
-                    <li key="OfferDetails">
-                      <p className="block pr-20 pl-5 py-2 font-bold">Offer Details</p>
-                    </li>
-                    <li key="ClearanceSale">
-                      <a href="#" className="block pr-20 pl-5 py-2 hover:text-blue-400">Clearance
-                        Sale</a>
-                    </li>
-                    <li key="SportsNutrition">
-
-                      <a href="#" className="block pr-20 pl-5 py-2 hover:text-blue-400">Sports
-                        Nutrition</a>
-                    </li>
-                    <li key="PreventiveCare">
-                      <a href="#" className="block pr-20 pl-5 py-2  hover:text-blue-400">Preventive
-                        Care</a>
-                    </li>
-                    <li key="FirstAid">
-                      <a href="#" className="block pr-20 pl-5 py-2 hover:text-blue-400">First
-                        Aid</a>
-                    </li>
-                    <li key="SunshineNutrition">
-                      <a href="#" className="block pr-20 pl-5 py-3 hover:text-blue-400">Sunshine
-                        Nutrition</a>
+              <div className="flex space-x-6 ">
+                <div className="group inline-block mr-2">
+                  <button className="hover:text-blue-500 underline-tra ml-7 py-1 flex">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5"
+                      stroke="currentColor" className="w-6 h-6 my-2 float-left mr-3">
+                      <path strokeLinecap="round" strokeLinejoin="round"
+                        d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                    </svg>
+                    <Link href={"/brands"} className=" text-start mt-2 capitalize whitespace-nowrap">{langData.navbar.brands}</Link>
+                  </button>
+                  <ul
+                    className="bg-white shadow-lg transform scale-0 group-hover:scale-100 absolute 
+                z-10 transition duration-150 ease-in-out origin-top hidden group-hover:flex flex-col  px-5  text-black left-0 right-0 border-t border-muted">
+                    <li key={"brands-section"} >
+                      <div className="grid grid-cols-5 gap-3  mx-auto" id="brands-section">
+                        {brands_data.data.brands.map((bd: any) => (
+                          <div className="grid-flow-row mb-5"> <div className={`flex flex-col mr-5`}>
+                            <Link href={`/brand/${bd.slug}`}>
+                              <Image className="mx-auto rounded-full border border-white bg-white shadow-md" width={120} height={120} src={bd.images.logo} alt="" />
+                              <h5 className="text-center mt-3">{bd.name}</h5>
+                            </Link>
+                          </div></div>
+                        ))}
+                      </div>
+                      <div className="w-full text-center my-5">
+                        <Link href="/brands" className="text-white px-8 py-2 text-sm mx-auto rounded-full bg-primary">VIEW ALL</Link>
+                      </div>
                     </li>
                   </ul>
-                </ul>
+                </div>
+                <div className=" inline-block mr-2">
+                  <button className="hover:text-blue-500 underline-tra py-1 flex">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5"
+                      stroke="currentColor" className="w-6 h-6 my-2 mr-3">
+                      <path strokeLinecap="round" strokeLinejoin="round"
+                        d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
+                    </svg>
+                    <Link href={"/offers"} className=" text-start mt-2  ">{langData.navbar.offers}</Link>
+                  </button>
+                </div>
+                <button className="  hover:text-blue-500 underline-tra flex items-center" >
+                  <Link href={"/health_checkup"} className=" text-start h-fit whitespace-nowrap ">{langData.navbar.health_packages}</Link>
+                </button>
               </div>
-
-              <button className=" py-1 hover:text-blue-500 underline-tra" data-dropdown-toggle="dropdown4">
-                <Link href={"/health_checkup"} className="mb-1 text-start float-left uppercase font-bold">{langData.navbar.health_packages}</Link>
-              </button>
             </div>
           </div>
         </div>
       </div >
-
 
       <div className="sm:visible md:hidden ">
         <div className="flex  bg-life text-white text-xs px-[10px] py-1 justify-between items-center">
@@ -926,7 +960,7 @@ const Navbar: FC<navbarProps> = ({ data, brands_data, isArabic, langData, langua
         setavailableAddresses={setavailableAddresses} showModal={session && addNewAddress ? true : false}
         AddressDataIndex={AddressDataIndex} formDatahandleChange={formDatahandleChange} setAddressDataIndex={setAddressDataIndex} />
 
-      <LanguageChangeModal setModalState={setModalState} modalState={languageModal} currentLanguage={parts[1] === "ar" ? languages[0] : languages[1]} currentCountry={parts[0] === "sa" ? countries[1] : countries[0]} countries={countries} languages={languages} lang={parts} languageClickedToast={() => { languageClickedToast() }} />
+      <LanguageChangeModal setModalState={setModalState} modalState={languageModal} currentLanguage={parts[1] === "ar" ? languages[0] : languages[1]} currentCountry={parts[0] === "sa" ? countries[1] : countries[0]} countries={countries} languages={languages} lang={parts} />
 
       <SmSearchBoxModal showModal={smScreenSearchBox} setCloseModal={setSmScreenSearchBox} isArabic={isArabic} queryData={queryData} setQueryData={setQueryData} searchButtonOnMouseEnter={searchButtonOnMouseEnter} SearchLoadingState={SearchLoadingState} searchData={searchData} searchBoxClear={searchBoxClear} searchSuggestions={searchSuggestions} searchClosebtn={searchClosebtn} />
 

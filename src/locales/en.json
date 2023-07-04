@@ -7,9 +7,9 @@
         "download_now": "Download Now",
         "deliver_to": "DELIVER TO",
         "shop_by_cat": "Shop By Category",
-        "brands": "BRANDS",
-        "offers": "OFFERS",
-        "health_packages": "HEALTH PACKAGES",
+        "brands": "Brands",
+        "offers": "Offers",
+        "health_packages": "Health Packages",
         "view_all": "View All",
         "searchbox_text": "Search for products"
     },
@@ -53,7 +53,7 @@
                 "store_locator": "Store Locator"
             },
             "our_policies": {
-                "title": "Know Us",
+                "title": "Our Policies",
                 "refund_policy": "Refund Policy",
                 "ship_terms": "Shipping Terms",
                 "pandp": "Privacy Policy",
@@ -63,7 +63,7 @@
                 "title": "Shop by Category"
             },
             "useful_links": {
-                "useful_links": "Useful Links",
+                "title": "Useful Links",
                 "browse_by_brands": "Browse by Brand",
                 "site_map": "Sitemap",
                 "offers_coupons": "Offers / Coupons",
@@ -71,7 +71,7 @@
             },
             "my_account": {
                 "title": "My Account",
-                "loginorsignup": "Login or Signup",
+                "loginorsignup": "Dashboard",
                 "view_cart": "View Cart",
                 "my_wish_list": "My Wishlist"
             }

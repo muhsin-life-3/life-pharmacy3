@@ -36,11 +36,11 @@ const AccordionCategoryMenu = ({ accordionData }: { accordionData: any }) => {
         >
             {accordionData.children.map((child: any, indx: number) => (
                 <AccordionItem  value={indx.toString()} className="">
-                    <AccordionTrigger className="w-full data-[state=open]:text-blue-500 data-[state=open]:border-none border-b-muted border-b md:text-base sm:text-sm text-[9px]">{child.name}</AccordionTrigger>
+                    <AccordionTrigger className="w-full data-[state=open]:text-blue-500 data-[state=open]:border-none border-b-muted border-b md:text-base sm:text-sm text-[9px]"> {child.name} </AccordionTrigger>
                     <AccordionContent className="">
                         <div className='grid lg:grid-cols-4 sm:grid-cols-3 grid-cols-3 sm:gap-3'>
                             {child.sections.map((child_sec: any) => (
-                                <Link href={generatePath(accordionData.name, child.slug, child_sec.name)} className="   rounded-lg p-2  group/item">
+                                <Link href={generatePath(accordionData.name, child.slug, child_sec.name)} className="  rounded-lg p-2  group/item">
                                     <Image className=" mx-auto group-hover/item:-translate-y-3 transition translate-y-0 duration-300" src={LoadImages(child_sec.images)} height={150} width={150} alt={child_sec.name} />
                                     <p className=" mt-3  ml-0 text-center sm:text-sm text-[8px] my-auto leading-[10px]">{child_sec.name}</p>
                                 </Link>

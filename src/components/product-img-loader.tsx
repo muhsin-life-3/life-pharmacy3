@@ -4,9 +4,9 @@ import ContentLoader from "react-content-loader"
 const ProductImgLoader = () => (
     <ContentLoader
         speed={2}
-        width={240}
-        height={240}
-        viewBox="0 0 240 240"
+        width={230}
+        height={230}
+        viewBox="0 0 230 230"
         backgroundColor="#f3f3f3"
         foregroundColor="#ecebeb"
 

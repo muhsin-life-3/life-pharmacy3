@@ -42,7 +42,7 @@ const ProductsPageData = ({ filterPath, categoryData, brandsData, isSearchPage, 
 
     const [selectedFilter, setFilter] = useState(filters[0])
     const { locale } = useLanguage();
-    const productsData = categoryData.products
+    var productsData = categoryData.products
     const [data, setData] = useState(productsData)
 
     function slugify(text: string) {
@@ -115,7 +115,8 @@ const ProductsPageData = ({ filterPath, categoryData, brandsData, isSearchPage, 
             getProductsDataByCat(filterPath + filterPaths, noOfProducts, true, locale).then(
                 (proData: any) => {
                     if (loadMoreData) {
-                        setData([...data, ...proData.data.products])
+                        debugger
+                        productsData = [...productsData, proData.data.products]
                         setAnimateSpin(false)
                         setShowMoreProductsbtn(false)
                     }
@@ -130,7 +131,9 @@ const ProductsPageData = ({ filterPath, categoryData, brandsData, isSearchPage, 
             getProductsDataByCat(filterPath + filterPaths, noOfProducts, false, locale).then(
                 (proData: any) => {
                     if (loadMoreData) {
-                        setData([...data, ...proData.data.products])
+                        debugger
+
+                        productsData = [productsData, proData.data.products]
                         setAnimateSpin(false)
                         setShowMoreProductsbtn(false)
                     }
@@ -155,11 +158,11 @@ const ProductsPageData = ({ filterPath, categoryData, brandsData, isSearchPage, 
         setNoOfProducts(c => c + 40)
     }
     return (
-        <div className='py-5 max-w-[1450px] mx-auto  sm:px-[10px] px-[5px]'>
+        <div className=' max-w-[1450px] mx-auto  sm:px-[10px] px-[5px]'>
             {!isSearchPage ?
-                <div className="flex justify-between  py-5 border-t border-muted">
-                    <div>
-                        <p className="sm:text-sm text-xs">Showing <span className="text-black">{categoryData.total_count}</span> of <span className="text-black ">{noOfProducts}</span> Products</p>
+                <div className="flex justify-between py-3">
+                    <div className="h-fit my-auto">
+                        <p className="sm:text-sm text-xs">Showing <span className="text-black">{noOfProducts}</span> of <span className="text-black ">{categoryData.total_count}</span> Products</p>
                     </div>
                     <div className=" items-center md:flex hidden">
                         <div className="relative inline-block text-left group/sort-menu">
@@ -311,7 +314,7 @@ const ProductsPageData = ({ filterPath, categoryData, brandsData, isSearchPage, 
                         : null}
                     <div className={`${isSearchPage ? ' col-span-full' : "col-span-3"}`}>
                         <div className={`grid ${isRowView ? "!grid-cols-1 !gap-0" : ""} ${isSearchPage ? "xl:grid-cols-6 md:grid-cols-4 sm:grid-cols-3 " : "  md:grid-cols-4 sm:grid-cols-3 xs:grid-cols-2 grid-cols-1"}  xs:grid-cols-2 grid-cols-1 sm:gap-3 gap-1`}>
-                            {data.length > 0 ? data.map((pro_data: any) => (
+                            {productsData.length > 0 ? productsData.map((pro_data: any) => (
                                 productFilterApplied ?
                                     skeletonArray.map(sk =>
                                         sk

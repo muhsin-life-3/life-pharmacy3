@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { CheckCircleIcon, CheckIcon, ChevronLeftIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
 import TransitionComp from './transition'
 import { useRouter } from 'next/router'
+import { toast } from 'react-toastify';
 
 interface compProps {
     setModalState: any
@@ -13,10 +14,9 @@ interface compProps {
     countries: any
     languages: any
     lang: any
-    languageClickedToast: any
 }
 
-const LanguageChangeModal: FC<compProps> = ({ setModalState, modalState, currentLanguage, currentCountry, countries, languages, lang, languageClickedToast }) => {
+const LanguageChangeModal: FC<compProps> = ({ setModalState, modalState, currentLanguage, currentCountry, countries, languages, lang }) => {
     const router = useRouter()
     const [IsLanguageChangeClicked, languageChangeClicked] = useState(false)
     const [IsCountryChangeClicked, CountryChangeClicked] = useState(true)
@@ -30,7 +30,8 @@ const LanguageChangeModal: FC<compProps> = ({ setModalState, modalState, current
     function languageOnClicked(path: any) {
         closeModal()
         router.push('', router.asPath, { locale: `${selectedCountryPath}-${path}` })
-        languageClickedToast()
+        toast.info("Language & Country changed successfully")
+
     }
 
     const countryProps = <div className='space-y-2'>
@@ -154,20 +155,21 @@ relative flex cursor-pointer rounded-lg px-5 md:py-4 py-2 shadow-md focus:outlin
                                 leaveFrom="opacity-100 scale-100"
                                 leaveTo="opacity-0 scale-95"
                             >
-                                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-4 text-left align-middle shadow-xl transition-all relative sm:text-sm md:text-base text-xs">
-                                    <div className='flex justify-start space-x-3 my-auto'>
+                                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white px-4 py-3 text-left align-middle shadow-xl transition-all relative sm:text-sm md:text-base text-xs">
+                                    <div className='flex justify-between space-x-3 my-auto items-center pb-3'>
                                         {!IsCountryChangeClicked ?
-                                            <div onClick={() => { languageBackClicked() }} className='cursor-pointer'> <ChevronLeftIcon className='w-6 h-5 ' /></div>
+                                            <div onClick={() => { languageBackClicked() }} className='cursor-pointer border-[3px] border-muted rounded-lg p-1 h-fit hover:bg-gray-200'> <ChevronLeftIcon className='w-6 h-5 md:w-7 md:h-7' /></div>
 
                                             : null}
-                                        <span className="font-bold md:text-lg text-sm pb-6">Select Your Preference</span>
+                                        <span className="font-bold md:text-lg text-sm ">Select Your Preference</span>
+
+                                        <button className=" bg-transparent  hover:text-gray-900 rounded-lg text-sm  items-center  border-[3px] border-muted  p-1 h-fit hover:bg-gray-200" onClick={() => { closeModal() }}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="md:w-6 md:h-6 h-4 w-4">
+                                                <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd" />
+                                            </svg>
+                                        </button>
                                     </div>
 
-                                    <button className="absolute top-4 right-4 bg-transparent  hover:text-gray-900 rounded-lg text-sm  items-center  " onClick={() => { closeModal() }}>
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="md:w-6 md:h-6 h-4 w-4">
-                                            <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd" />
-                                        </svg>
-                                    </button>
 
                                     {IsCountryChangeClicked ?
                                         <TransitionComp setTransition={IsCountryChangeClicked}>

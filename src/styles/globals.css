@@ -2,10 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-html {
-    font-family: '__Poppins_b0a861';
-    background-color: #fff;
-    -webkit-font-smoothing: antialiased;
+html{
+    font-family: '__Poppins_dd609f' !important;
 }
 
 ::-webkit-scrollbar {
@@ -28,7 +26,6 @@ html {
 
 .underline-tra {
     position: relative;
-    display: inline-block;
 }
 
 .underline-tra::after {
@@ -103,14 +100,12 @@ li>button svg {
 } */
 
 .search-suggestion-height {
-    max-height: calc(98vh - 70px);
+    max-height: calc(89vh - 70px);
 }
-
 
 
 .lg-screen-searchsuggestion-sm {
     height: calc(102vh - 70px);
-
 }
 
 textarea:focus,
@@ -242,7 +237,7 @@ input:focus {
 
 
 .swiper-pagination-bullet-active {
-    @apply !w-4 !h-2 !rounded-lg !bg-gray-400
+    @apply !w-4 !h-2 !rounded-lg !bg-gray-400 
 }
 
 /* .slides-per-view-2 {
@@ -374,7 +369,6 @@ li{
 }
 
 
-
 .label-circle {
     display: flex;
     align-items: center;
@@ -387,14 +381,50 @@ li{
 
 }
 
+h4{
+    @apply lg:text-lg md:text-base text-sm pb-4
+}
 
+.ol-footer ul{
+@apply list-[circle]
+}
+.ol-footer ul li{
+    @apply py-2
+    }
+section{
+    @apply py-4
+}
 
+.banner-overlay>a {
+    position: relative
+}
+.banner-overlay>a:after {
+    content: "";
+    display: block;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: hsla(0,0%,100%,.3);
 
+    z-index: 1;
+    opacity: 0;
+    visibility: hidden;
+    transition: all .4s ease
+}
 
+.banner-overlay:focus>a:after,.banner-overlay:hover>a:after {
+    visibility: visible;
+    opacity: 1
+}
 
-
-
-
+.bg-light{
+    @apply bg-[#f4f7ff]
+}
+.bg-light:hover{
+    @apply bg-[#dae0e5]
+}
 
 
 

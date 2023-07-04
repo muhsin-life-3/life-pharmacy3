@@ -18,7 +18,7 @@ const BrandsProductsPage = ({ data, menuData, brandPara }: { data: any, menuData
                 {data.brand_details.images.banner ?
                     <div className=''>
                         <Image src={data.brand_details.images.banner} height={500} width={1440} alt="headerimg" className='object-cover lg:h-[20rem] md:h-[15rem] w-full mx-auto' />
-                        <BreadCrumb menuData={menuData} />
+                        <BreadCrumb menuData={menuData} type={"brands"}/>
                     </div> :
                     <>
                         <div className=" h-[12em] px-[10px] grid items-center mx-auto bg-[url('https://www.lifepharmacy.com/images/page-header-bg.jpg')] relative bg-repeat-y">
@@ -27,7 +27,7 @@ const BrandsProductsPage = ({ data, menuData, brandPara }: { data: any, menuData
                                 <h1 className='text-2xl  text-center   capitalize text-blue-500'>{menuData[1] ? String(menuData[1]).toLowerCase().replace(/-/g, ' ') : " Products"} </h1>
                             </div>
                         </div>
-                        <BreadCrumb menuData={menuData} />
+                        <BreadCrumb menuData={menuData} type={"brands"}/>
                     </>
                 }
                 <div className="grid grid-cols-1 gap-x-8 gap-y-5 lg:grid-cols-4">
